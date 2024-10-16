@@ -1,0 +1,33 @@
+name: Build and Upload CPython MSI
+
+on:
+  workflow_dispatch: 
+    inputs:
+      arch:
+        description: CPU architecture
+        required: true
+        type: string
+        options:
+          - x86
+          - x64
+          - ARM64
+
+jobs:
+  build-and-upload:
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Call reusable workflow for MSI build
+      uses: ./.github/workflows/reusable_windows_msi.yml  # 재사용 가능한 워크플로우 경로
+      with:
+        arch: ${{ inputs.arch }}  # 선택된 arch 값 사용
+
+    - name: Upload CPython installer artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: python-installer
+        path: ./PCbuild/**/python-*.exe  # 재귀적으로 모든 python-*.exe 파일을 찾음
